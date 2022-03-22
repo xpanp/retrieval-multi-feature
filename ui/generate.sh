@@ -1,0 +1,1 @@
+pyuic5 -o Ui_retrieval.py retrieval.ui
