@@ -18,7 +18,7 @@ Image retrieval using multiple features
 
 ### Faiss
 
-使用conda安装
+使用`conda`安装
 
 ```bash
 conda install openblas
@@ -27,7 +27,7 @@ conda install faiss-cpu -c pytorch
 
 ### MySQL
 
-使用`Docker`安装
+使用`docker`安装
 
 ```bash
 docker pull mysql:latest

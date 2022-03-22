@@ -6,10 +6,6 @@ import json
 
 from search import search
 
-# 获取列表的第二个元素
-def takeSecond(elem):
-    return elem[1]
-
 class SearchServer:
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = '.'

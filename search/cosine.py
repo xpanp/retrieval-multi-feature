@@ -1,5 +1,4 @@
 import torch
-import time
 
 # 获取列表的第二个元素
 def take_second(elem):

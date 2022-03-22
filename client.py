@@ -1,14 +1,12 @@
 import sys
 import cv2
+import os 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5 import QtGui, QtCore
 
 from ui import Ui_retrieval
 from search import search
 from store import mysql
-
-voc_dir = "C:/Users/phs/Desktop/pytest/dataset/voc07+12/JPEGImages"
-pattern_dir = "C:/Users/phs/Desktop/pytest/dataset/image-pattern"
 
 class RetrievalUI():
     def __init__(self, db_name) -> None:
@@ -22,9 +20,8 @@ class RetrievalUI():
         print("current retrieval algorithm:", self.algorithm)
 
         self.img_path = " "
-        self.search_engine = search.Search(mode = search.LOCAL, db = db_name)
-        # self.work_dir = os.getcwd()
-        self.work_dir = voc_dir
+        self.search_engine = search.Search(mode = search.HTTP, db = db_name)
+        self.work_dir = os.getcwd()
 
     def show(self):
         self.MainWindow.show()
@@ -42,22 +39,22 @@ class RetrievalUI():
         image = QtGui.QPixmap(image).scaled(100, 100, QtCore.Qt.KeepAspectRatio)
         self.ui_win.label.setPixmap(image)
 
-    def label_show(self, scores, names):
+    def label_show(self, scores, img_bufs):
         # TODO 展示四张图片的窗体不直接在ui中画死
-        self.ui_win.label_1.setPixmap(self.get_img(names[0]))
-        print(names[0], float(scores[0]))
-        self.ui_win.label_2.setPixmap(self.get_img(names[1]))
-        print(names[1], float(scores[1]))
-        self.ui_win.label_3.setPixmap(self.get_img(names[2]))
-        print(names[2], float(scores[2]))
-        self.ui_win.label_4.setPixmap(self.get_img(names[3]))
-        print(names[3], float(scores[3]))
+        print("scores:", scores) # TODO 在窗体上直接展示
+        self.ui_win.label_1.setPixmap(self.img_norm(img_bufs[0]))
+        self.ui_win.label_2.setPixmap(self.img_norm(img_bufs[1]))
+        self.ui_win.label_3.setPixmap(self.img_norm(img_bufs[2]))
+        self.ui_win.label_4.setPixmap(self.img_norm(img_bufs[3]))
 
     # slot函数 检索
     def search(self):
-        print("search picture path:",self.img_path)
-        scores, names = self.search_engine.search(self.img_path, self.algorithm)
-        self.label_show(scores, names)
+        print("search picture path:", self.img_path)
+        if len(self.img_path) == 0:
+            print("please choose picture") # TODO 弹窗警告
+            return
+        scores, img_bufs = self.search_engine.search(self.img_path, self.algorithm)
+        self.label_show(scores, img_bufs)
 
     # slot函数 检索方式改变
     def mode_change(self, algorithm):

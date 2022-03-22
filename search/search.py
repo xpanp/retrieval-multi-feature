@@ -1,6 +1,6 @@
 from core import lbp, vgg16
-from . import cosine, faissdb
 from store import mysql
+import cv2
 
 HTTP = "http"
 LOCAL = "local"
@@ -23,36 +23,38 @@ class Search():
             results = self.db.select_all()
             for r in results:
                 self.feats_vgg16.append(r[3])
-                self.feats_lbp.append(r[3])
+                self.feats_lbp.append(r[4])
 
             if cp_mode == FAISS:
+                from . import faissdb
                 self.engine_vgg16 = faissdb.FaissL2(self.feats_vgg16)
                 self.engine_lbp = faissdb.FaissL2(self.feats_lbp)
             else:
+                from . import cosine
                 self.engine_vgg16 = cosine.Cosine(self.feats_vgg16)
                 self.engine_lbp = cosine.Cosine(self.feats_lbp)
-            
-        
+                    
         elif self.mode == HTTP:
-            pass
+            from . import http
+            self.client = http.Clinet()
 
     def search(self, img_path, algorithm=VGG16):
         print("search mode:", self.mode)
         print("use algorithm:", algorithm)
         if self.mode == LOCAL:
             if algorithm == VGG16:
-                return self.search_engine(img_path, self.engine_vgg16, vgg16.get_feature_path)
+                return self.searcher(img_path, self.engine_vgg16, vgg16.get_feature_path)
             elif algorithm == LBP:
-                return self.search_engine(img_path, self.engine_lbp, lbp.get_feature_path)
+                return self.searcher(img_path, self.engine_lbp, lbp.get_feature_path)
         elif self.mode == HTTP:
-            pass
+            return self.client.search(img_path, algorithm)
 
-    # TODO 直接返回图像二进制，而不是返回文件路径
-    def search_engine(self, img_path, engine, extract_func):
-        D, I = engine.search(extract_func(img_path))
-        N = []
-        for index in I:
+    def searcher(self, img_path, engine, extract_func):
+        scores, indexs = engine.search(extract_func(img_path))
+        img_bufs = []
+        for index in indexs:
             # 数据库中id是从1开始的，而比对引擎中的id是从0开始的
-            r = self.db.select_one(index+1) 
-            N.append(r[2])  # 返回图像路径
-        return D, N
+            path = self.db.get_one_path(index+1)
+            img = cv2.imread(path)
+            img_bufs.append(img)  # 返回图像路径
+        return scores, img_bufs

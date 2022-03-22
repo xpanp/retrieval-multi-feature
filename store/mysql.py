@@ -18,18 +18,37 @@ class DB():
         f4 = list(struct.unpack('{}f'.format(int(len(r[6])/4)), r[6]))  # glcm
         return (r[0], r[1], r[2], f1, f2, f3, f4)
 
-    def select_one(self, id):
+    # return (id filename filepath list list list list)
+    def get_one(self, id):
         sql = "SELECT * FROM DATA_VECTOR WHERE ID = %s"
         cursor = self.db.cursor()
         try:
             cursor.execute(sql, (id, ))
             result = cursor.fetchone()
         except pymysql.Error as e:
-            print("select fail", )
-            
+            print("select fail", e)
+        
+        if result == None:
+            print("no record with id:", id)
+            return None
         return self.unpack(result)
 
-    # return id filename filepath list list list list
+    # return filepath
+    def get_one_path(self, id):
+        sql = "SELECT FILEPATH FROM DATA_VECTOR WHERE ID = %s"
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(sql, (id, ))
+            result = cursor.fetchone()
+        except pymysql.Error as e:
+            print("select fail", e)
+        
+        if result == None:
+            print("no record with id:", id)
+            return None
+        return result[0]
+
+    # return [(id filename filepath list list list list)]
     def select_all(self):
         sql = "SELECT * FROM DATA_VECTOR ORDER BY ID"
         cursor = self.db.cursor()
