@@ -193,6 +193,7 @@ class LBP:
         cv2.imshow('Image', image_array)
         cv2.waitKey(0)
 
+# dim 256
 def get_feature_path(path):
     l = LBP()
     image_array = l.describe(path)

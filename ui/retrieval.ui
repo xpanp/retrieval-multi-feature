@@ -149,6 +149,16 @@
          <string>lbp</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>color</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>glcm</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>

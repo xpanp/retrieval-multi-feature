@@ -30,5 +30,6 @@ if __name__ ==  '__main__':
     results = get_feature_dir(image_dir)
     # 将结果插入数据库
     for f in results:
-        db.insert(f[0], f[1], f[2], f[3].tolist(), f[4].tolist(), [], [])
+        db.insert(f[0], f[1], f[2], f[3].tolist(), 
+            f[4].tolist(), f[5].tolist(), f[6].tolist())
     db.close()

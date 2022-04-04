@@ -1,5 +1,4 @@
-from . import vgg16
-from . import lbp
+from . import vgg16, lbp, color, glcm
 import torch
 from torchvision import models
 
@@ -23,6 +22,14 @@ class Extractor():
         thist = torch.from_numpy(hist)
         return thist
 
+    def get_color_feature(self, path):
+        return color.get_feature_path(path)
+
+    def get_glcm_feature(self, path):
+        return glcm.get_feature_path(path)
+
     # 获取综合信息及特征
     def get(self, path):
-        return (path.split("\\")[-1], path, self.get_vgg16_feature(path), self.get_lbp_feature(path))
+        return (path.split("\\")[-1], path, self.get_vgg16_feature(path), 
+            self.get_lbp_feature(path), self.get_color_feature(path), 
+            self.get_glcm_feature(path))

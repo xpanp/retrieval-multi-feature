@@ -1,4 +1,4 @@
-from core import lbp, vgg16
+from core import lbp, vgg16, color, glcm
 from store import mysql
 import cv2
 
@@ -7,6 +7,8 @@ LOCAL = "local"
 
 VGG16 = "vgg16"
 LBP = "lbp"
+COLOR = "color"
+GLCM = "glcm"
 
 FAISS = "faiss"
 COSINE = "cosine"
@@ -18,21 +20,30 @@ class Search():
         if self.mode == LOCAL:
             self.feats_vgg16 = []
             self.feats_lbp = []
+            self.feats_color = []
+            self.feats_glcm = []
 
             self.db = mysql.DB(database = db)
             results = self.db.select_all()
             for r in results:
                 self.feats_vgg16.append(r[3])
                 self.feats_lbp.append(r[4])
+                self.feats_color.append(r[5])
+                self.feats_glcm.append(r[6])
 
             if cp_mode == FAISS:
                 from . import faissdb
-                self.engine_vgg16 = faissdb.FaissL2(self.feats_vgg16)
-                self.engine_lbp = faissdb.FaissL2(self.feats_lbp)
+                # TODO 将特征维度信息存到数据库中
+                self.engine_vgg16 = faissdb.FaissL2(self.feats_vgg16, dim=512)
+                self.engine_lbp = faissdb.FaissL2(self.feats_lbp, dim=256)
+                self.engine_color = faissdb.FaissL2(self.feats_color, dim=256)
+                self.engine_glcm = faissdb.FaissL2(self.feats_glcm, dim=72)
             else:
                 from . import cosine
                 self.engine_vgg16 = cosine.Cosine(self.feats_vgg16)
                 self.engine_lbp = cosine.Cosine(self.feats_lbp)
+                self.engine_color = cosine.Cosine(self.feats_color)
+                self.engine_glcm = cosine.Cosine(self.feats_glcm)
                     
         elif self.mode == HTTP:
             from . import http
@@ -46,6 +57,10 @@ class Search():
                 return self.searcher(img_path, self.engine_vgg16, vgg16.get_feature_path)
             elif algorithm == LBP:
                 return self.searcher(img_path, self.engine_lbp, lbp.get_feature_path)
+            elif algorithm == COLOR:
+                return self.searcher(img_path, self.engine_color, color.get_feature_path)
+            elif algorithm == GLCM:
+                return self.searcher(img_path, self.engine_glcm, glcm.get_feature_path)
         elif self.mode == HTTP:
             return self.client.search(img_path, algorithm)
 
