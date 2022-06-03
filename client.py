@@ -20,7 +20,7 @@ class RetrievalUI():
         print("current retrieval algorithm:", self.algorithm)
 
         self.img_path = " "
-        self.search_engine = search.Search(mode = search.HTTP, db = db_name)
+        self.search_engine = search.Search(mode = search.LOCAL, db = db_name)
         self.work_dir = os.getcwd()
 
     def show(self):

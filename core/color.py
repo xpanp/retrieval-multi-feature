@@ -50,6 +50,7 @@ def color_hist(path):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
     thist = torch.from_numpy(hist)
+    thist = torch.squeeze(thist, dim=1) # 降维
     return thist
 
 def get_feature_path(path):

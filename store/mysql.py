@@ -4,7 +4,7 @@ import struct
 TestDB = 'testdb'
 
 class DB():
-    def __init__(self, host='10.199.130.68', user='root', password='123456', database='testdb') -> None:
+    def __init__(self, host='49.234.33.206', user='root', password='123456', database='testdb') -> None:
         self.db = pymysql.connect(host=host, user=user, password=password, database=database)
     
     def close(self):
