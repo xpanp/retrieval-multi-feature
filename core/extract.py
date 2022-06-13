@@ -1,4 +1,4 @@
-from . import vgg16, lbp, color, glcm
+from . import vgg16, lbp, color, glcm, vit
 import torch
 from torchvision import models
 
@@ -6,13 +6,18 @@ from torchvision import models
 class Extractor():
     def __init__(self) -> None:
         # 导入Pytorch封装的vgg16网络模型
-        model = models.vgg16(pretrained=True)
-        self.feature_extractor = model.features
+        vgg_model = models.vgg16(pretrained=True)
+        self.vgg_feature_extractor = vgg_model.features
         self.lbp = lbp.LBP()
+        self.vit_model, self.vit_trans = vit.get_model()
     
+    # 提取vit特征
+    def get_vit_feature(self, path):
+        return vit.get_feature(path, self.vit_model, self.vit_trans)
+
     # 提取vgg16特征
     def get_vgg16_feature(self, path):
-        return vgg16.get_feature(path, self.feature_extractor, False)
+        return vgg16.get_feature(path, self.vgg_feature_extractor, False)
 
     # 提取lbp特征
     def get_lbp_feature(self, path):
@@ -32,4 +37,4 @@ class Extractor():
     def get(self, path):
         return (path.split("\\")[-1], path, self.get_vgg16_feature(path), 
             self.get_lbp_feature(path), self.get_color_feature(path), 
-            self.get_glcm_feature(path))
+            self.get_glcm_feature(path), self.get_vit_feature(path))

@@ -7,6 +7,7 @@ CREATE TABLE DATA_VECTOR (
         LBPFEAT BLOB,
         COLORFEAT BLOB,
         GLCMFEAT BLOB,
+        VITFEAT BLOB,
         INDEX(ID))
 
 # 检索所有数据
@@ -17,12 +18,12 @@ SELECT * FROM DATA_VECTOR WHERE ID = %s
 
 # 插入示例数据
 INSERT INTO DATA_VECTOR(FILENAME, FILEPATH, 
-        VGG16FEAT, LBPFEAT, COLORFEAT, GLCMFEAT)
-        VALUES ("1.jpg", "/home/test/1.jpg", " ", " ", " ", " ")
+        VGG16FEAT, LBPFEAT, COLORFEAT, GLCMFEAT, VITFEAT)
+        VALUES ("1.jpg", "/home/test/1.jpg", " ", " ", " ", " ", " ")
 
 # 插入数据
-INSERT INTO DATA_VECTOR(FILENAME, FILEPATH, VGG16FEAT, LBPFEAT, COLORFEAT, GLCMFEAT) \
-        VALUES (%s, %s, _binary %s, _binary %s, _binary %s, _binary %s)
+INSERT INTO DATA_VECTOR(FILENAME, FILEPATH, VGG16FEAT, LBPFEAT, COLORFEAT, GLCMFEAT, VITFEAT) \
+        VALUES (%s, %s, _binary %s, _binary %s, _binary %s, _binary %s, _binary %s)
 
 # 重置表id
 ALTER TABLE DATA_VECTOR DROP ID;

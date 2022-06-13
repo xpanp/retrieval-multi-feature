@@ -1,4 +1,4 @@
-from core import lbp, vgg16, color, glcm
+from core import lbp, vgg16, color, glcm, vit
 from store import mysql
 import cv2
 
@@ -9,6 +9,7 @@ VGG16 = "vgg16"
 LBP = "lbp"
 COLOR = "color"
 GLCM = "glcm"
+VIT = "vit"
 
 FAISS = "faiss"
 COSINE = "cosine"
@@ -22,6 +23,7 @@ class Search():
             self.feats_lbp = []
             self.feats_color = []
             self.feats_glcm = []
+            self.feats_vit = []
 
             self.db = mysql.DB(database = db)
             results = self.db.select_all()
@@ -30,6 +32,7 @@ class Search():
                 self.feats_lbp.append(r[4])
                 self.feats_color.append(r[5])
                 self.feats_glcm.append(r[6])
+                self.feats_vit.append(r[7])
 
             if cp_mode == FAISS:
                 from . import faissdb
@@ -38,12 +41,14 @@ class Search():
                 self.engine_lbp = faissdb.FaissL2(self.feats_lbp, dim=256)
                 self.engine_color = faissdb.FaissL2(self.feats_color, dim=256)
                 self.engine_glcm = faissdb.FaissL2(self.feats_glcm, dim=72)
+                self.engine_vit = faissdb.FaissL2(self.feats_vit, dim=768)
             else:
                 from . import cosine
                 self.engine_vgg16 = cosine.Cosine(self.feats_vgg16)
                 self.engine_lbp = cosine.Cosine(self.feats_lbp)
                 self.engine_color = cosine.Cosine(self.feats_color)
                 self.engine_glcm = cosine.Cosine(self.feats_glcm)
+                self.engine_vit = cosine.Cosine(self.feats_vit)
                     
         elif self.mode == HTTP:
             from . import http
@@ -61,6 +66,8 @@ class Search():
                 return self.searcher(img_path, self.engine_color, color.get_feature_path)
             elif algorithm == GLCM:
                 return self.searcher(img_path, self.engine_glcm, glcm.get_feature_path)
+            elif algorithm == VIT:
+                return self.searcher(img_path, self.engine_vit, vit.get_feature_path)
         elif self.mode == HTTP:
             return self.client.search(img_path, algorithm)
 

@@ -159,6 +159,11 @@
          <string>glcm</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>vit</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
