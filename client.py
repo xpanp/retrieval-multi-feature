@@ -29,6 +29,7 @@ def get_args():
     parser.add_argument('--port', type=str, default='11820',
         help='http mode, server port')
 
+    # client mode == local
     # database
     parser.add_argument('--db_host', type=str, default='127.0.0.1',
         help='database host')
