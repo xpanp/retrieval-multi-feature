@@ -1,11 +1,9 @@
 import pymysql
 import struct
 
-TestDB = 'testdb'
-
 class DB():
-    def __init__(self, host='49.234.33.206', user='root', password='123456', database='testdb') -> None:
-        self.db = pymysql.connect(host=host, user=user, password=password, database=database)
+    def __init__(self, args) -> None:
+        self.db = pymysql.connect(host=args.db_host, user=args.db_user, password=args.db_passwd, database=args.db_database)
     
     def close(self):
         self.db.close()
@@ -37,6 +35,21 @@ class DB():
     # return filepath
     def get_one_path(self, id):
         sql = "SELECT FILEPATH FROM DATA_VECTOR WHERE ID = %s"
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(sql, (id, ))
+            result = cursor.fetchone()
+        except pymysql.Error as e:
+            print("select fail", e)
+        
+        if result == None:
+            print("no record with id:", id)
+            return None
+        return result[0]
+    
+    # return filename
+    def get_one_name(self, id):
+        sql = "SELECT FILENAME FROM DATA_VECTOR WHERE ID = %s"
         cursor = self.db.cursor()
         try:
             cursor.execute(sql, (id, ))

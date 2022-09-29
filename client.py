@@ -1,28 +1,71 @@
 import sys
 import cv2
-import os 
+from pathlib import Path
+import argparse
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5 import QtGui, QtCore
 
 from ui import Ui_retrieval
 from search import search
-from store import mysql
+
+def get_args():
+    parser = argparse.ArgumentParser()
+
+    # client
+    parser.add_argument('--mode', type=str, default='http',
+        help='client work mode, support: http|local')
+
+    # searcher
+    parser.add_argument('--datadir', type=str, default='~',
+        help='dataset dir')
+
+    parser.add_argument('--cp_mode', type=str, default='cosine',
+        help='compare mode, support: cosine|faiss')
+    
+    # client mode == http
+    parser.add_argument('--host', type=str, default='127.0.0.1',
+        help='http mode, server ip')
+
+    parser.add_argument('--port', type=str, default='11820',
+        help='http mode, server port')
+
+    # database
+    parser.add_argument('--db_host', type=str, default='127.0.0.1',
+        help='database host')
+
+    parser.add_argument('--db_user', type=str, default='admin',
+        help='database user name')
+
+    parser.add_argument('--db_passwd', type=str, default='admin',
+        help='database user passwd')
+
+    parser.add_argument('--db_database', type=str, default='test',
+        help='database name')
+
+    args = parser.parse_args()
+
+    return args
 
 class RetrievalUI():
-    def __init__(self, db_name) -> None:
+    def __init__(self, args) -> None:
         self.MainWindow = QMainWindow()
         self.ui_win = Ui_retrieval.Ui_MainWindow()
         self.ui_win.setupUi(self.MainWindow)
         self.ui_win.pushButton_choose.clicked.connect(self.openfile)
         self.ui_win.pushButton_search.clicked.connect(self.search)
         self.ui_win.comboBox.currentTextChanged.connect(self.mode_change)
+
         self.algorithm = self.ui_win.comboBox.currentText()
         print("current retrieval algorithm:", self.algorithm)
 
         self.img_path = " "
-        self.search_engine = search.Search(mode = search.LOCAL, db = db_name)
-        self.work_dir = os.getcwd()
+        self.search_engine = search.Search(args, mode = args.mode, cp_mode = args.cp_mode)
+        if Path(args.datadir).exists():
+            self.work_dir = args.datadir
+        else:
+            self.work_dir = str(Path.cwd())
 
+    # qt界面展示
     def show(self):
         self.MainWindow.show()
 
@@ -76,7 +119,8 @@ class RetrievalUI():
         return img
 
 if __name__ == '__main__':
+    args = get_args()
     app = QApplication(sys.argv)
-    r = RetrievalUI(mysql.TestDB)
+    r = RetrievalUI(args)
     r.show()
     sys.exit(app.exec_())

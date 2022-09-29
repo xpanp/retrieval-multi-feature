@@ -1,6 +1,7 @@
 from core import lbp, vgg16, color, glcm, vit
 from store import mysql
 import cv2
+from pathlib import Path
 
 HTTP = "http"
 LOCAL = "local"
@@ -15,9 +16,13 @@ FAISS = "faiss"
 COSINE = "cosine"
 
 class Search():
-    # cp_mode, 比对方式，可选faiss或者torch cosine
-    def __init__(self, mode = LOCAL, db = mysql.TestDB, cp_mode = COSINE) -> None:
+    def __init__(self, args, mode = LOCAL, cp_mode = COSINE) -> None:
         self.mode = mode
+        if Path(args.datadir).exists():
+            self.datadir = args.datadir
+        elif mode == LOCAL:
+            raise Exception("can not find data dir:", args.datadir)
+
         if self.mode == LOCAL:
             self.feats_vgg16 = []
             self.feats_lbp = []
@@ -25,7 +30,8 @@ class Search():
             self.feats_glcm = []
             self.feats_vit = []
 
-            self.db = mysql.DB(database = db)
+            self.db = mysql.DB(args)
+            # 将特征加载到内存中，加快检索
             results = self.db.select_all()
             for r in results:
                 self.feats_vgg16.append(r[3])
@@ -34,6 +40,7 @@ class Search():
                 self.feats_glcm.append(r[6])
                 self.feats_vit.append(r[7])
 
+            # cp_mode, 比对方式，可选faiss或者torch cosine
             if cp_mode == FAISS:
                 from . import faissdb
                 # TODO 将特征维度信息存到数据库中
@@ -52,7 +59,7 @@ class Search():
                     
         elif self.mode == HTTP:
             from . import http
-            self.client = http.Clinet()
+            self.client = http.Clinet(args)
 
     def search(self, img_path, algorithm=VGG16):
         print("search mode:", self.mode)
@@ -76,7 +83,8 @@ class Search():
         img_bufs = []
         for index in indexs:
             # 数据库中id是从1开始的，而比对引擎中的id是从0开始的
-            path = self.db.get_one_path(index+1)
+            path = self.db.get_one_name(index+1)
+            path = str(Path(self.datadir).joinpath(path))
             img = cv2.imread(path)
             img_bufs.append(img)  # 返回图像路径
         return scores, img_bufs
